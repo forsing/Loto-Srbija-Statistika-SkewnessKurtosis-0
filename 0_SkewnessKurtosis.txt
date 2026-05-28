@@ -1,0 +1,232 @@
+=======================================
+
+🔁 0_SkewnessKurtosis — start  28.05.2026_11.46.25
+
+✅ CSV učitan: /loto7_4622_k42.csv
+   broj izvlačenja: 4622, brojeva po kolu: 7
+
+Skewness po 7 kolona (pozicije u izvlačenju):
+0    1.339360
+1    0.732800
+2    0.303771
+3   -0.054454
+4   -0.344746
+5   -0.758994
+6   -1.403680
+dtype: float64
+
+Excess Kurtosis po 7 kolona:
+0    1.872824
+1    0.214157
+2   -0.473269
+3   -0.560941
+4   -0.367676
+5    0.269614
+6    2.229009
+dtype: float64
+
+Skewness izvedenih statistika kola:
+suma       -0.021804
+neparnih   -0.036596
+niskih      0.032400
+raspon     -0.700106
+dtype: float64
+
+Excess Kurtosis izvedenih statistika kola:
+suma       -0.176951
+neparnih   -0.257632
+niskih     -0.211563
+raspon      0.158393
+dtype: float64
+
+Suma kola: skew=-0.0218, kurt=-0.1770
+log1p(suma): skew=-0.6444, kurt=0.7326
+
+🖼️  Plot snimljen u: /0_SkewnessKurtosis.png
+
+📝 Snimljeno u: /0_SkewnessKurtosis.txt
+
+🔁 0_SkewnessKurtosis — stop  28.05.2026_11.46.30
+⏱️  Ukupno vreme: 0:00:04  (4.9 s)
+
+
+
+--- 28.05.2026_11.46.25 (seed=39, N=4622) ---
+skewness_po_kolonama: {0: 1.3394, 1: 0.7328, 2: 0.3038, 3: -0.0545, 4: -0.3447, 5: -0.759, 6: -1.4037}
+kurtosis_po_kolonama: {0: 1.8728, 1: 0.2142, 2: -0.4733, 3: -0.5609, 4: -0.3677, 5: 0.2696, 6: 2.229}
+skewness_izvedenih:   {'suma': -0.0218, 'neparnih': -0.0366, 'niskih': 0.0324, 'raspon': -0.7001}
+kurtosis_izvedenih:   {'suma': -0.177, 'neparnih': -0.2576, 'niskih': -0.2116, 'raspon': 0.1584}
+suma_log1p: skew=-0.6444, kurt=0.7326
+plot=/0_SkewnessKurtosis.png
+ukupno_vreme=0:00:04  (4.9 s)
+
+
+
+===================================================
+
+Tumačenje rezultata (loto7_4622_k42.csv, N=4622):
+
+Skewness (asimetrija):
+  > 0  rep ide udesno (gornji deo dalje od proseka)
+  < 0  rep ide ulevo
+  |skew| < 0.5  praktično simetrično
+  0.5-1         umereno asimetrično
+  > 1           jako asimetrično
+
+Excess kurtosis (pandas vraća excess, ne sirovu):
+  = 0  kao normalna raspodela
+  > 0  oštriji vrh, deblji repovi (leptokurtic)
+  < 0  pljosnatiji vrh, kraći repovi (platikurtic)
+
+
+Skewness po 7 kolona (sortirano izvlačenje, pozicije 0..6):
+  kol. 0 (najmanji broj): +1.34  jako desno asimetrično (najmanji obično mali, retko izleti gore)
+  kol. 1:                 +0.73  umereno desno
+  kol. 2:                 +0.30  blago desno
+  kol. 3:                 -0.05  simetrično (medijan pozicija)
+  kol. 4:                 -0.34  blago levo
+  kol. 5:                 -0.76  umereno levo
+  kol. 6 (najveći broj):  -1.40  jako levo asimetrično
+
+To je očekivan obrazac: krajnje pozicije sortiranog kola su pritisnute
+na zid opsega [1..39], srednja je slobodna i Gaussovska.
+Kurtoza prati istu krivu (1.87 i 2.23 na krajevima — oštri vrhovi,
+deblji repovi; ~0 u sredini).
+
+
+Izvedene statistike kola:
+  suma:     skew=-0.02, kurt=-0.18   praktično normalna (centralna granična teorema)
+  neparnih: skew=-0.04, kurt=-0.26   simetrično oko 3.5/7
+  niskih:   skew=+0.03, kurt=-0.21   simetrično oko 3.5/7
+  raspon:   skew=-0.70, kurt=+0.16   umereno levo asimetrično (raspon blizu max 38)
+
+
+log1p(suma): skew=-0.64, kurt=+0.73
+  Log transformacija ovde POGORŠAVA simetriju, jer je originalna suma već skoro normalna.
+  Log korigovati treba samo desno asimetrične podatke (skew > +1), a ovde to nije slučaj.
+
+
+Šta to znači praktično:
+  1. Loto generator je statistički "fer" — izvedene statistike
+     (suma, neparnih, niskih) su normalne, što potvrđuje slučajnost.
+  2. Predikcija "broj po poziciji" je problematična jer kol. 0 i kol. 6
+     imaju krute granice — zato je urađen multi-label pristup po brojevima 1..39.
+  3. Filteri po sumi i parnosti su pouzdani (Gauss → odbacuju ekstremne kombinacije).
+  4. Raspon je manje koristan kao filter jer ima blagu asimetriju i nije Gauss.
+
+
+
+=======================================================
+
+Kako da izračunata statistika postane konkretan filter/rerank za NEXT predikciju:
+
+1. Šta se dobija iz CSV-a (jednom, kao prior)
+
+μ, σ za 4 statistike: suma, neparnih, niskih, raspon — to su Gaussovi (skew ≈ 0) → svaka kombinacija dobija Gauss log-PDF.
+Po-pozicija histogram (kol. 0..6) — kol. 0 favorizuje brojeve 1–10, kol. 6 brojeve 30–39 (zbog skew ±1.4).
+
+
+2. Kako ulazi u predikciju
+
+Postoje 4 nivoa, od najlakše do najboljeg:
+
+A) Tvrdi filter (najprostije)
+
+Regresor da top-1 kombinaciju.
+Ako joj je suma van μ ± 2σ ili neparnih van [2..5] → odbaciti, uzeti sledeću kombinaciju.
+
+
+B) Soft rerank (preporučujem)
+
+Iz regresora uzme top-15 brojeva po skoru (oko 5000 mogućih C(15,7) kombinacija).
+Za svaku kombinaciju izračunati rerank score:
+score = Σ regresor_skor(broj)
+      + λ · ( log N(suma | μ_s, σ_s)
+            + log N(neparnih | μ_o, σ_o)
+            + log N(niskih | μ_l, σ_l)
+            + log N(raspon | μ_r, σ_r) )
+λ kontroliše koliko statistika "kažnjava" loše kombinacije. λ ≈ 1-3.
+Top-1 po score = NEXT.
+
+
+C) Per-pozicija prior
+
+Sortiraš kombinaciju i za svaku poziciju (0..6) dodaje log P(broj | pozicija) iz istorijskog histograma.
+Hvata onu blagu krivu skewness-a po kolonama (kol. 0 nije baš 39, kol. 6 nije baš 1).
+
+
+D) Bayes ansambl (kombinacija B+C)
+
+score = model_likelihood + λ₁ · gauss_stats + λ₂ · per_pozicija
+Najmoćnije. 
+
+Filtrira kombinacije koje statistički ne liče na pravo loto kolo (npr. svih 7 brojeva ispod 19 — niskih=7/7, daleko od μ ≈ 3.5; ili suma 60, daleko od μ ≈ 140).
+Ne menja "koji brojevi" — menja koja kombinaciju od top-N.
+
+
+
+4_StatsRerank.py 
+
+Učita CSV, izračuna μ,σ za 4 statistike + per-pozicija histogram.
+Pozove svoje regresore (3) unutar fajla.
+Generiše top-15 brojeva, evaluira sve C(15,7), rerank po formuli iz B (ili D).
+Snimi NEXT pick + TXT + plot raspodele kandidata.
+
+
+
+==================================================
+
+A) Tvrdi filter
+--- 28.05.2026_10.47.27 (seed=39, N=4622, mode=A, top_pool=15, sigma=2.0) ---
+DTR: raw=[8, 13, 16, 23, 31, 34, 37] (suma=162, neparnih=4/7, niskih(≤19)=3/7, raspon=29); 
+rerank_A=[8, 13, 16, 23, 31, 34, 37] (suma=162, neparnih=4/7, niskih(≤19)=3/7, raspon=29); raw_hits=1.480; rerank_hits=1.480; AUC=0.506; LRAP=0.254; passed=5243
+RFR: raw=[7, 8, 23, 26, 27, 32, 35] (suma=158, neparnih=4/7, niskih(≤19)=2/7, raspon=28); 
+rerank_A=[7, 8, 23, 26, 27, 32, 35] (suma=158, neparnih=4/7, niskih(≤19)=2/7, raspon=28); raw_hits=1.170; rerank_hits=1.160; AUC=0.492; LRAP=0.245; passed=4866
+XGB: raw=[2, 7, 23, 28, 30, 32, 37] (suma=159, neparnih=3/7, niskih(≤19)=2/7, raspon=35); 
+rerank_A=[2, 7, 23, 28, 30, 32, 37] (suma=159, neparnih=3/7, niskih(≤19)=2/7, raspon=35); raw_hits=1.140; rerank_hits=1.160; AUC=0.498; LRAP=0.239; passed=5909
+bounds={'suma': (85.2285, 195.791), 'neparnih': (1.1927, 5.9921), 'niskih': (0.9483, 5.8206), 'raspon': (19.5891, 40.2577)}
+plot=/Users/4c/Desktop/GHQ/KvantniRegresor/0_4_SkewnessKurtosis_A.png
+ukupno_vreme=0:01:36  (96.0 s)
+
+
+
+B) Soft rerank
+--- 28.05.2026_11.15.49 (seed=39, N=4622, mode=B, top_pool=15, weight=0.25) ---
+DTR: raw=[8, 13, 16, 23, 31, 34, 37] (suma=162, neparnih=4/7, niskih(≤19)=3/7, raspon=29); 
+rerank_B=[5, 8, 13, 23, 25, 32, 34] (suma=140, neparnih=4/7, niskih(≤19)=3/7, raspon=29); raw_hits=1.480; rerank_hits=1.300; AUC=0.506; LRAP=0.254; stat_score=-0.247; total_score=1.294
+RFR: raw=[7, 8, 23, 26, 27, 32, 35] (suma=158, neparnih=4/7, niskih(≤19)=2/7, raspon=28); 
+rerank_B=[3, 7, 8, 26, 29, 32, 33] (suma=138, neparnih=4/7, niskih(≤19)=3/7, raspon=30); raw_hits=1.170; rerank_hits=1.230; AUC=0.492; LRAP=0.245; stat_score=-0.223; total_score=1.284
+XGB: raw=[2, 7, 23, 28, 30, 32, 37] (suma=159, neparnih=3/7, niskih(≤19)=2/7, raspon=35); 
+rerank_B=[2, 7, 15, 23, 28, 30, 32] (suma=137, neparnih=3/7, niskih(≤19)=3/7, raspon=30); raw_hits=1.140; rerank_hits=1.210; AUC=0.498; LRAP=0.239; stat_score=-0.360; total_score=2.274
+stats_params={'suma': (140.5097, 27.6406), 'neparnih': (3.5924, 1.1999), 'niskih': (3.3845, 1.2181), 'raspon': (29.9234, 5.1672)}
+plot=/Users/4c/Desktop/GHQ/KvantniRegresor/0_4_SkewnessKurtosis_B.png
+ukupno_vreme=0:01:33  (93.7 s)
+
+
+
+C) Per-pozicija prior
+--- 28.05.2026_11.06.27 (seed=39, N=4622, mode=C, top_pool=15, weight=0.25) ---
+DTR: raw=[8, 13, 16, 23, 31, 34, 37] (suma=162, neparnih=4/7, niskih(≤19)=3/7, raspon=29); 
+rerank_C=[1, 8, 13, 23, 29, 32, 38] (suma=144, neparnih=4/7, niskih(≤19)=3/7, raspon=37); raw_hits=1.480; rerank_hits=1.380; AUC=0.506; LRAP=0.254; position_score=-16.898; total_score=-2.873
+RFR: raw=[7, 8, 23, 26, 27, 32, 35] (suma=158, neparnih=4/7, niskih(≤19)=2/7, raspon=28); 
+rerank_C=[3, 8, 15, 23, 29, 32, 38] (suma=148, neparnih=4/7, niskih(≤19)=3/7, raspon=35); raw_hits=1.170; rerank_hits=1.260; AUC=0.492; LRAP=0.245; position_score=-17.224; total_score=-2.978
+XGB: raw=[2, 7, 23, 28, 30, 32, 37] (suma=159, neparnih=3/7, niskih(≤19)=2/7, raspon=35); 
+rerank_C=[2, 7, 13, 23, 28, 32, 37] (suma=142, neparnih=4/7, niskih(≤19)=3/7, raspon=35); raw_hits=1.140; rerank_hits=1.100; AUC=0.498; LRAP=0.239; position_score=-17.409; total_score=-2.070
+plot=/Users/4c/Desktop/GHQ/KvantniRegresor/0_4_SkewnessKurtosis_C.png
+ukupno_vreme=0:01:26  (86.3 s)
+
+
+
+D) Bayes ansambl (kombinacija B+C)
+--- 28.05.2026_11.20.18 (seed=39, N=4622, mode=D, top_pool=15, stats_weight=0.25, position_weight=0.25) ---
+DTR: raw=[8, 13, 16, 23, 31, 34, 37] (suma=162, neparnih=4/7, niskih(≤19)=3/7, raspon=29); 
+rerank_D=[1, 8, 13, 23, 29, 32, 34] (suma=140, neparnih=4/7, niskih(≤19)=3/7, raspon=33); raw_hits=1.480; rerank_hits=1.370; AUC=0.506; LRAP=0.254; stat_score=-0.570; position_score=-17.567; total_score=-3.181
+RFR: raw=[7, 8, 23, 26, 27, 32, 35] (suma=158, neparnih=4/7, niskih(≤19)=2/7, raspon=28); 
+rerank_D=[3, 8, 15, 23, 29, 32, 34] (suma=144, neparnih=4/7, niskih(≤19)=3/7, raspon=31); raw_hits=1.170; rerank_hits=1.170; AUC=0.492; LRAP=0.245; stat_score=-0.274; position_score=-17.894; total_score=-3.215
+XGB: raw=[2, 7, 23, 28, 30, 32, 37] (suma=159, neparnih=3/7, niskih(≤19)=2/7, raspon=35); 
+rerank_D=[2, 7, 13, 23, 28, 32, 37] (suma=142, neparnih=4/7, niskih(≤19)=3/7, raspon=35); raw_hits=1.140; rerank_hits=1.260; AUC=0.498; LRAP=0.239; stat_score=-1.183; position_score=-17.409; total_score=-2.365
+stats_params={'suma': (140.5097, 27.6406), 'neparnih': (3.5924, 1.1999), 'niskih': (3.3845, 1.2181), 'raspon': (29.9234, 5.1672)}
+plot=/Users/4c/Desktop/GHQ/KvantniRegresor/0_4_SkewnessKurtosis_D.png
+ukupno_vreme=0:01:37  (97.8 s)
+
+================================================
