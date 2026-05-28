@@ -40,8 +40,8 @@ random.seed(SEED)
 # ============================================================
 # Konfiguracija
 # ============================================================
-CSV_PATH    = "/Users/4c/Desktop/GHQ/data/loto7_4622_k42.csv"
-OUT_TXT     = "/Users/4c/Desktop/GHQ/KvantniRegresor/0_SkewnessKurtosis.txt"
+CSV_PATH    = "/loto7_4622_k42.csv"
+OUT_TXT     = "/0_SkewnessKurtosis.txt"
 N_MIN, N_MAX = 1, 39
 K           = 7
 LAG         = 5
@@ -127,7 +127,7 @@ for i, col in enumerate(stats_df.columns):
     axes[i, 2].set_title(f"{col} — QQ Plot")
 
 plt.tight_layout()
-PNG_PATH = "/Users/4c/Desktop/GHQ/KvantniRegresor/0_SkewnessKurtosis.png"
+PNG_PATH = "/0_SkewnessKurtosis.png"
 plt.savefig(PNG_PATH)
 plt.show()
 print(f"🖼️  Plot snimljen u: {PNG_PATH}")
@@ -162,7 +162,7 @@ print()
 
 🔁 0_SkewnessKurtosis — start  28.05.2026_11.46.25
 
-✅ CSV učitan: /Users/4c/Desktop/GHQ/data/loto7_4622_k42.csv
+✅ CSV učitan: /data/loto7_4622_k42.csv
    broj izvlačenja: 4622, brojeva po kolu: 7
 
 Skewness po 7 kolona (pozicije u izvlačenju):
@@ -202,9 +202,9 @@ dtype: float64
 Suma kola: skew=-0.0218, kurt=-0.1770
 log1p(suma): skew=-0.6444, kurt=0.7326
 
-🖼️  Plot snimljen u: /Users/4c/Desktop/GHQ/KvantniRegresor/0_SkewnessKurtosis.png
+🖼️  Plot snimljen u: /0_SkewnessKurtosis.png
 
-📝 Snimljeno u: /Users/4c/Desktop/GHQ/KvantniRegresor/0_SkewnessKurtosis.txt
+📝 Snimljeno u: /0_SkewnessKurtosis.txt
 
 🔁 0_SkewnessKurtosis — stop  28.05.2026_11.46.30
 ⏱️  Ukupno vreme: 0:00:04  (4.9 s)
